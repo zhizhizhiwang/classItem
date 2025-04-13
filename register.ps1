@@ -20,8 +20,6 @@ if ($pythonwPath -eq "") {
 
 # 将pythonw.exe路径转换为绝对路径
 $pythonwPath = [System.IO.Path]::GetFullPath($pythonwPath)
-# 检查python路径下pip内容是否满足requirements.txt
-
 
 
 if (-not (Test-Path $pythonwPath)) {
