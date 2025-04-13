@@ -258,8 +258,7 @@ def main():
             font = ImageFont.load_default()
 
         img_pil = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-        draw = ImageDraw.Draw(img_pil)
-        # 当前时间
+        draw = ImageDraw.Draw(img_pil) 
 
         # 计算全部note占用的宽高
         note_width = 0
@@ -274,10 +273,12 @@ def main():
         # 从右下角开始绘制
         note_x = img_width - note_width - 250
         note_y = img_height - note_height - len(actual_note) * 10 - 50
+        
         # 绘制背景
         # 做一下透明色处理
-        img_pil = Image.fromarray(draw_transparent_rect(np.array(img_pil), (note_x, note_y), (img_width, img_height), note_background_color, alpha=0.5))
-        draw = ImageDraw.Draw(img_pil)
+        if len(actual_note) > 0:
+            img_pil = Image.fromarray(draw_transparent_rect(np.array(img_pil), (note_x, note_y), (img_width, img_height), note_background_color, alpha=0.5))
+            draw = ImageDraw.Draw(img_pil) # 回调rebuild钩子
 
         # 绘制note
         line_tag = 1
@@ -287,6 +288,7 @@ def main():
             draw.text((note_x, note_y), each, font=font, fill=note_config.get(f'color-line{line_tag}', (0, 0, 0)))
             note_y += note_height + 10
             line_tag += 1
+        del line_tag
 
             
         # 进度条更明显
