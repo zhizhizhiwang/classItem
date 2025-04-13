@@ -277,7 +277,7 @@ def main():
         # 绘制背景
         # 做一下透明色处理
         if len(actual_note) > 0:
-            img_pil = Image.fromarray(draw_transparent_rect(np.array(img_pil), (note_x, note_y), (img_width, img_height), note_background_color, alpha=0.5))
+            img_pil = Image.fromarray(draw_transparent_rect(np.array(img_pil), (note_x, note_y), (img_width, img_height), note_background_color, alpha=note_background_color[3] / 255))
             draw = ImageDraw.Draw(img_pil) # 回调rebuild钩子
 
         # 绘制note
