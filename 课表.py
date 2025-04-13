@@ -27,6 +27,11 @@ screen_height = root.winfo_screenheight()
 whole_time = 18
 height = 40
 
+#加载note
+with open('note.txt', 'r', encoding='utf-8') as f:
+    note = f.readlines()
+    note = [x.strip() for x in note if x.strip()]  # 去除空行和换行符
+
 # 加载并缩放背景图片
 background_path = 'background.jpg'  # 请替换为实际图片路径
 if os.path.exists(background_path):
@@ -85,7 +90,7 @@ def ext():
 
 
 def reload():
-    global img, color_rgb, current_config, today, background_path, config, root, screen_width, screen_height, whole_time, height
+    global img, color_rgb, current_config, today, background_path, config, root, screen_width, screen_height, whole_time, height, note
 
     root = tkinter.Tk()
     screen_width = root.winfo_screenwidth()
@@ -97,11 +102,20 @@ def reload():
         config = json.load(f)
     today = str(datetime.datetime.now().isoweekday())
     current_config = config.get(today, [])
+    
+    with open('note.txt', 'r', encoding='utf-8') as f:
+        note = f.readlines()
+        note = [x.strip() for x in note if x.strip()]  # 去除空行和换行符
 
     background_path = 'background.jpg'
     if os.path.exists(background_path):
         img = cv2.imread(background_path)
-        img = cv2.resize(img, (screen_width, screen_height))
+        # img = cv2.resize(img, (screen_width, screen_height))
+        # 按照源比例尺缩放
+        img_height, img_width = img.shape[:2]
+        scale = min(screen_width / img_width, screen_height / img_height)
+        img = cv2.resize(img, (int(img_width * scale), int(img_height * scale)))
+        img = img[0:screen_height, 0:screen_width]
     else:  # 创建白色背景
         img = np.full((screen_height, screen_width, 3), 255, dtype=np.uint8)
 
@@ -150,10 +164,51 @@ def draw_rounded_rect(img, pt1, pt2, color, radius=height // 2):
         cv2.rectangle(img, pt1, pt2, color, -1)
 
 
+def draw_transparent_rect(img, pt1, pt2, color, alpha=0.5):
+    """
+    在图像上绘制一个半透明矩形
+    参数：
+        img: 目标图像 (OpenCV 格式)
+        pt1: 左上角坐标 (x1, y1)
+        pt2: 右下角坐标 (x2, y2)
+        color: 颜色 (RGBA 格式，A 为透明度)
+        alpha: 透明度 (0.0 完全透明，1.0 完全不透明)
+    """
+    # 确保 pt1 和 pt2 是整数元组
+    pt1 = (int(pt1[0]), int(pt1[1]))
+    pt2 = (int(pt2[0]), int(pt2[1]))
+
+    # 确保 color[:3] 是整数元组
+    color = tuple(map(int, color[:3]))
+
+    overlay = img.copy()  # 创建一个覆盖层
+    output = img.copy()   # 最终输出图像
+
+    # 绘制矩形到覆盖层
+    cv2.rectangle(overlay, pt1, pt2, color, -1)  # 忽略 A 通道，绘制 RGB 矩形
+
+    # 将覆盖层与原图混合
+    cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
+
+    return output
+
+
 def main():
-    global img, color_rgb, current_config, today, background_path, config, root, screen_width, screen_height, whole_time, height, running
+    global img, color_rgb, current_config, today, background_path, config, root, screen_width, screen_height, whole_time, height, running, note
     running = True
     while running:
+        
+        if os.path.exists(background_path):
+            img = cv2.imread(background_path)
+            # img = cv2.resize(img, (screen_width, screen_height))
+            # 按照源比例尺缩放
+            img_height, img_width = img.shape[:2]
+            scale = min(screen_width / img_width, screen_height / img_height)
+            img = cv2.resize(img, (int(img_width * scale), int(img_height * scale)))
+            img = img[0:screen_height, 0:screen_width]
+        else:  # 创建白色背景
+            img = np.full((screen_height, screen_width, 3), 255, dtype=np.uint8)
+        
         # 获取当前时间并计算进度条位置
         current_time = datetime.datetime.now()
         current_str = f"{current_time.hour}:{current_time.minute}"
@@ -176,6 +231,23 @@ def main():
             # cv2.rectangle(img, (start_x, 0), (end_x, height), (0, 0, 0), 1)
             cv2.line(img, (start_x, 5), (start_x, height - 5), (0, 0, 0), 1)
             cv2.line(img, (end_x, 5), (end_x, height - 5), (0, 0, 0), 1)
+            
+        # 去除note中以#开头的注释
+        actual_note = [x for x in note if not x.startswith('#')]
+        # 读取以:开头的设置, :color=(255,255,255) 储存为{'color' : (255, 255, 255)}
+        note_config : dict = {}
+        for each in actual_note:
+            if each.startswith(':'):
+                try:
+                    key, value = each[1:].split('=')
+                    note_config[key.strip()] = eval(value.strip())
+                except Exception as e:
+                    print(f"Error parsing note config: {each} -> {e}")
+        #去掉配置行
+        actual_note = [x for x in actual_note if not x.startswith(':')]
+        # 获取背景颜色配置
+        note_background_color = note_config.get('background', (240, 250, 250, 0))
+        # print(note_background_color)
 
         # 使用PIL添加文字
         font_path = 'MapleMono-NF-CN.ttf'
@@ -189,6 +261,34 @@ def main():
         draw = ImageDraw.Draw(img_pil)
         # 当前时间
 
+        # 计算全部note占用的宽高
+        note_width = 0
+        note_height = 0
+        for each in actual_note:
+            text_size = font.getbbox(each)
+            note_width = max(note_width, font.getlength(each))
+            note_height += text_size[3] - text_size[1]
+            
+        img_height, img_width = img.shape[:2]
+        
+        # 从右下角开始绘制
+        note_x = img_width - note_width - 250
+        note_y = img_height - note_height - len(actual_note) * 10 - 50
+        # 绘制背景
+        # 做一下透明色处理
+        img_pil = Image.fromarray(draw_transparent_rect(np.array(img_pil), (note_x, note_y), (img_width, img_height), note_background_color, alpha=0.5))
+        draw = ImageDraw.Draw(img_pil)
+
+        # 绘制note
+        line_tag = 1
+        for each in actual_note:
+            text_size = font.getbbox(each)
+            note_height = text_size[3] - text_size[1]
+            draw.text((note_x, note_y), each, font=font, fill=note_config.get(f'color-line{line_tag}', (0, 0, 0)))
+            note_y += note_height + 10
+            line_tag += 1
+
+            
         # 进度条更明显
         # draw.text((progress_width - 100, -5), "-->", font=font, fill=(0, 0, 0))
 

@@ -1,0 +1,16 @@
+# 标签内容与格式
+# 写在这里的内容会被显示到背景上
+# 以#开头的行会被视为注释
+# 没有自动换行
+# 空行会被忽略
+# :开头的是设置
+:background=(255, 255, 255, 100)
+# background是背景色
+:color-line2=(255, 0, 0)
+# color-line{line number}可以指定特定行的颜色
+
+# 实际上的文字
+exmaple
+line2
+# 长难句
+aaaaaaaaaaaaaaaaaaaeeeeeeeeeeeeeeeeeeooooooooooo

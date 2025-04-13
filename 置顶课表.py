@@ -56,8 +56,8 @@ def main():
     win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 600, 300, 0, 0, win32con.SWP_NOSIZE | win32con.SWP_NOMOVE)
     # hwnd = pygame.display.get_wm_info()["window"]
     win32gui.SetWindowLong(hwnd,
-                           win32con.GWL_EXSTYLE,
-                           win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
+                        win32con.GWL_EXSTYLE,
+                        win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
     # win32gui.SetLayeredWindowAttributes(hwnd, win32api.RGB(*(255, 255, 255)), 200, win32con.LWA_ALPHA)
     # 设置窗口标题
     pygame.display.set_caption("Top Bar")
@@ -97,13 +97,13 @@ def main():
             # print(each['title'])
             box = (
                 (time_map(each['time'][0]),
-                 0),
+                0),
                 ((time_map(each['time'][1]) - time_map(each['time'][0])),
-                 SCREEN_HEIGHT))
+                SCREEN_HEIGHT))
             pygame.draw.line(window, (0, 0, 0), (time_map(each['time'][0]), 5),
-                             (time_map(each['time'][0]), SCREEN_HEIGHT - 5))
+                            (time_map(each['time'][0]), SCREEN_HEIGHT - 5))
             pygame.draw.line(window, (0, 0, 0), (time_map(each['time'][1]), 5),
-                             (time_map(each['time'][1]), SCREEN_HEIGHT - 5))
+                            (time_map(each['time'][1]), SCREEN_HEIGHT - 5))
             if each['title'] == "杀！":
                 text1 = font.render(each['title'][0], True, (255, 20, 20))
                 # text2 = font.render(each['title'][1], True, (255, 20, 20))
