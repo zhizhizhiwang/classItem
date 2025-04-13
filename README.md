@@ -2,7 +2,7 @@
 一个简单的课表显示小程序
 
 # 构建
-pip install -r requirments.txt
+pip install -r requirements.txt
 准备一张背景图命名为background.jpg, 放在根目录下
 
 修改课表配置请修改: config.json

@@ -1,9 +1,12 @@
 import multiprocessing
 import os.path
-
+import sys
 import pygame
 import pystray
 from PIL import Image
+
+script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+os.chdir(script_dir)  
 
 import 置顶课表 as top
 import 课表 as background
