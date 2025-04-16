@@ -3,13 +3,13 @@ import json
 import os
 import random
 import threading
-import time
+import win32gui
 import tkinter
 import atexit
 import cv2
 import numpy as np
 import win32con
-import win32gui
+import pygame
 from PIL import Image, ImageDraw, ImageFont
 
 # 加载配置文件
@@ -19,6 +19,7 @@ with open('config.json', 'r', encoding='utf-8') as f:
 # 获取当前星期几
 today = str(datetime.datetime.now().isoweekday())
 current_config = config.get(today, [])
+timer = pygame.time.Clock()
 
 # 获取屏幕尺寸
 root = tkinter.Tk()
@@ -120,16 +121,16 @@ def reload():
         img = np.full((screen_height, screen_width, 3), 255, dtype=np.uint8)
 
     color_rgb = (
-        random.randint(128, 255),
-        random.randint(128, 255),
-        random.randint(128, 255)
+        random.randint(100, 230),
+        random.randint(100, 230),
+        random.randint(100, 230)
     )
 
-    color_rgb = (255, 255, 255) if color_rgb == (240, 240, 200) else color_rgb
+    # color_rgb = (255, 255, 255) if color_rgb == (240, 240, 200) else color_rgb
 
 
 atexit.register(ext)
-threading.Timer(60, change_rbg, ()).start()
+# threading.Timer(60, change_rbg, ()).start()
 
 
 def draw_rounded_rect(img, pt1, pt2, color, radius=height // 2):
@@ -197,7 +198,7 @@ def main():
     global img, color_rgb, current_config, today, background_path, config, root, screen_width, screen_height, whole_time, height, running, note
     running = True
     while running:
-        
+        timer.tick(1)
         if os.path.exists(background_path):
             img = cv2.imread(background_path)
             # img = cv2.resize(img, (screen_width, screen_height))
@@ -220,9 +221,15 @@ def main():
 
         # 背景
         draw_rounded_rect(img, (0, 0), (screen_width, height), (240, 250, 250))
-
+        draw_rounded_rect(img, (time_map(current_str) - 140, height), (time_map(current_str), height * 2),
+                          color_rgb)
         # 绘制进度条（转换为BGR颜色格式）
         draw_rounded_rect(img, (0, 0), (progress_width, height), color_rgb[::-1])
+
+        cv2.rectangle(img, (int(progress_width * current_time.second / 60) - 20, 0),
+                      (int(progress_width * current_time.second / 60), height),
+                      (255, 150, 200), -1
+                      )
 
         # 绘制时间区块边框
         for item in current_config:
@@ -271,7 +278,7 @@ def main():
         img_height, img_width = img.shape[:2]
         
         # 从右下角开始绘制
-        note_x = img_width - note_width - 250
+        note_x = img_width - note_width 
         note_y = img_height - note_height - len(actual_note) * 10 - 50
         
         # 绘制背景
@@ -311,7 +318,9 @@ def main():
             # 单字模式
             draw.text((x, 0), title[0], font=font, fill=text_color)
 
-        draw.text((time_map(current_str) - 120, -3), current_str, font=font, fill=(255, 255, 255, 120))
+        draw.text((time_map(current_str) - 120, height), current_str, font=font, fill=(0, 0, 0))
+        # draw_rounded_rect(img_pil, (time_map(current_str) - 120, height), (time_map(current_str), height * 2), (200, 150, 180))
+        # cv2.rectangle(img, (box[0],box[1]), (box[0]+box[2],box[1]+box[3]), (250, 250, 250), -1)
 
         # 转换回OpenCV格式
         img = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
@@ -325,7 +334,9 @@ def main():
             win32con.SPIF_UPDATEINIFILE | win32con.SPIF_SENDCHANGE
         )
 
-        time.sleep(10)
+        # time.sleep(10)
+        # change_rbg()
+
     ext()
 
 

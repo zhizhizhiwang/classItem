@@ -89,8 +89,7 @@ def main():
         pygame.draw.rect(window, (255, 255, 255), ((0, 0), (SCREEN_WIDTH, SCREEN_HEIGHT)), 0, 25)
         pygame.draw.rect(window, color, ((0, 0), (time_map(minute), SCREEN_HEIGHT)), 0, 25)
         
-        time_text = font.render(current_str, True, (255, 255, 255, 100))
-        window.blit(time_text, (time_map(current_str) - 140, 0))
+
 
         for each in config.get(today, []):
             # print(each['time'])
@@ -113,6 +112,10 @@ def main():
 
             window.blit(text1, box[0])
             # window.blit(text2, (box[0][0], SCREEN_HEIGHT // 2))
+        time_text = font.render(current_str, True, (255, 255, 255, 100))
+        window.blit(time_text, (time_map(current_str) - 140, 0))
+
+
         # 更新显示
         pygame.display.flip()
 

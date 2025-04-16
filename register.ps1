@@ -1,7 +1,7 @@
 # 定义参数
 $taskName = "ClassItemScript"
 $pythonwPath = ""
-$scriptPath = ""
+$scriptPath = "C:\Users\EEO\Documents\课表"
 
 # 检查管理员权限
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
