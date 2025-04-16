@@ -197,19 +197,20 @@ def draw_transparent_rect(img, pt1, pt2, color, alpha=0.5):
 def main():
     global img, color_rgb, current_config, today, background_path, config, root, screen_width, screen_height, whole_time, height, running, note
     running = True
+    if os.path.exists(background_path):
+        img = cv2.imread(background_path)
+        # img = cv2.resize(img, (screen_width, screen_height))
+        # 按照源比例尺缩放
+        img_height, img_width = img.shape[:2]
+        scale = min(screen_width / img_width, screen_height / img_height)
+        img = cv2.resize(img, (int(img_width * scale), int(img_height * scale)))
+        img = img[0:screen_height, 0:screen_width]
+    else:  # 创建白色背景
+        img = np.full((screen_height, screen_width, 3), 255, dtype=np.uint8)
+    origin_img = img.copy()
     while running:
         timer.tick(1)
-        if os.path.exists(background_path):
-            img = cv2.imread(background_path)
-            # img = cv2.resize(img, (screen_width, screen_height))
-            # 按照源比例尺缩放
-            img_height, img_width = img.shape[:2]
-            scale = min(screen_width / img_width, screen_height / img_height)
-            img = cv2.resize(img, (int(img_width * scale), int(img_height * scale)))
-            img = img[0:screen_height, 0:screen_width]
-        else:  # 创建白色背景
-            img = np.full((screen_height, screen_width, 3), 255, dtype=np.uint8)
-        
+        img = origin_img.copy()
         # 获取当前时间并计算进度条位置
         current_time = datetime.datetime.now()
         current_str = f"{current_time.hour}:{current_time.minute}"
@@ -221,8 +222,7 @@ def main():
 
         # 背景
         draw_rounded_rect(img, (0, 0), (screen_width, height), (240, 250, 250))
-        draw_rounded_rect(img, (time_map(current_str) - 140, height), (time_map(current_str), height * 2),
-                          color_rgb)
+        # draw_rounded_rect(img, (time_map(current_str) - 140, height), (time_map(current_str), height * 2),color_rgb)
         # 绘制进度条（转换为BGR颜色格式）
         draw_rounded_rect(img, (0, 0), (progress_width, height), color_rgb[::-1])
 
@@ -318,7 +318,7 @@ def main():
             # 单字模式
             draw.text((x, 0), title[0], font=font, fill=text_color)
 
-        draw.text((time_map(current_str) - 120, height), current_str, font=font, fill=(0, 0, 0))
+        draw.text((time_map(current_str) - 120, -3), current_str, font=font, fill=random.shuffle(list(color_rgb)))
         # draw_rounded_rect(img_pil, (time_map(current_str) - 120, height), (time_map(current_str), height * 2), (200, 150, 180))
         # cv2.rectangle(img, (box[0],box[1]), (box[0]+box[2],box[1]+box[3]), (250, 250, 250), -1)
 

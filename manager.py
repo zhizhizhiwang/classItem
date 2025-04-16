@@ -52,6 +52,7 @@ def on_click():
 menu = (
     pystray.MenuItem("启动", show_background, default=True),
     pystray.MenuItem("切换顶端显示", on_click),
+    pystray.MenuItem("打开配置文件", lambda :os.startfile('note.txt')),
     pystray.MenuItem("重载", on_reload),
     pystray.MenuItem("退出", ext)
 )
