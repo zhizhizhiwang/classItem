@@ -11,6 +11,7 @@ import numpy as np
 import win32con
 import pygame
 from PIL import Image, ImageDraw, ImageFont
+import sys
 
 # 加载配置文件
 with open('config.json', 'r', encoding='utf-8') as f:
@@ -27,6 +28,18 @@ screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 whole_time = 18
 height = 40
+background_path : str = ""
+
+def get_background_name():
+    global background_path
+    all_path = []
+    for root, dirs, files in os.walk('background', topdown=False):
+        all_path += files
+    print(f"all:{all_path},now:{background_path}")
+    name = background_path.split('\\')[-1]
+    if name in all_path:
+        all_path.remove(name)
+    return rf'background\{random.choice(all_path)}'
 
 #加载note
 with open('note.txt', 'r', encoding='utf-8') as f:
@@ -34,7 +47,7 @@ with open('note.txt', 'r', encoding='utf-8') as f:
     note = [x.strip() for x in note if x.strip()]  # 去除空行和换行符
 
 # 加载并缩放背景图片
-background_path = 'background.jpg'  # 请替换为实际图片路径
+background_path = get_background_name()  # 请替换为实际图片路径
 if os.path.exists(background_path):
     img = cv2.imread(background_path)
     # img = cv2.resize(img, (screen_width, screen_height))
@@ -82,7 +95,7 @@ def ext():
     global running
     print("trigger ext")
     running = False
-    _output_path = os.path.abspath('background.jpg')
+    _output_path = os.path.abspath('background/background.jpg')
     win32gui.SystemParametersInfo(
         win32con.SPI_SETDESKWALLPAPER,
         _output_path,
@@ -108,7 +121,7 @@ def reload():
         note = f.readlines()
         note = [x.strip() for x in note if x.strip()]  # 去除空行和换行符
 
-    background_path = 'background.jpg'
+    background_path = get_background_name()
     if os.path.exists(background_path):
         img = cv2.imread(background_path)
         # img = cv2.resize(img, (screen_width, screen_height))
@@ -251,7 +264,7 @@ def main():
                 except Exception as e:
                     print(f"Error parsing note config: {each} -> {e}")
         #去掉配置行
-        actual_note = [x for x in actual_note if not x.startswith(':')]
+        actual_note = [f'时间：{current_str}:{f"0{current_time.second}" if current_time.second < 10 else current_time.second}'] + [x for x in actual_note if not x.startswith(':')]
         # 获取背景颜色配置
         note_background_color = note_config.get('background', (240, 250, 250, 0))
         # print(note_background_color)
@@ -318,7 +331,7 @@ def main():
             # 单字模式
             draw.text((x, 0), title[0], font=font, fill=text_color)
 
-        draw.text((time_map(current_str) - 120, -3), current_str, font=font, fill=random.shuffle(list(color_rgb)))
+        draw.text((time_map(current_str) - 120, -3), current_str, font=font, fill=(255, 255, 200))
         # draw_rounded_rect(img_pil, (time_map(current_str) - 120, height), (time_map(current_str), height * 2), (200, 150, 180))
         # cv2.rectangle(img, (box[0],box[1]), (box[0]+box[2],box[1]+box[3]), (250, 250, 250), -1)
 

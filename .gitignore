@@ -177,7 +177,7 @@ cython_debug/
 *.jpg
 
 # 调试文件
-background.jpg
+background/background.jpg
 【哲风壁纸】剧照-星际穿越 (1).png
 【哲风壁纸】剧照-星际穿越.png
 desktop_bg.jpg
